@@ -19,16 +19,16 @@ const SYSTEM_PROMPT = `أنت مساعد ذكي ومفيد.
 export async function generateReply(
   history: Pick<MessageDTO, "role" | "content">[]
 ): Promise<string> {
-  const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [
+  const messages = [
     { role: "system", content: SYSTEM_PROMPT },
     ...history.map((m) => ({
-      role: m.role as "user" | "assistant",
+      role: m.role,
       content: m.content,
     })),
-  ];
+  ] as any;
 
   const res = await client.chat.completions.create({
-    model,
+    model: model as string,
     messages,
     temperature: 0.7,
   });

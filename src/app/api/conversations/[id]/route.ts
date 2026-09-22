@@ -20,11 +20,11 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
 
     await connectDB();
 
-    const doc: any = await Conversation.findByIdAndUpdate(
+    const doc = (await Conversation.findByIdAndUpdate(
       id,
       { title },
       { new: true }
-    ).lean();
+    ).lean()) as any;
 
     if (!doc) {
       return NextResponse.json(
@@ -36,9 +36,9 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
     return NextResponse.json({
       conversation: {
         id: String(doc._id),
-        title: doc.title,
-        createdAt: doc.createdAt.toISOString(),
-        updatedAt: doc.updatedAt.toISOString(),
+        title: String(doc.title),
+        createdAt: new Date(doc.createdAt).toISOString(),
+        updatedAt: new Date(doc.updatedAt).toISOString(),
       },
     });
   } catch (err: any) {
