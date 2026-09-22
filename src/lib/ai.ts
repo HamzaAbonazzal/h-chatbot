@@ -32,7 +32,7 @@ export async function generateReply(
         content: m.content,
       })
     ),
-  ];
+  ] as any;
 
   const res = await client.chat.completions.create({
     model,
