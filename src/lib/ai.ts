@@ -16,19 +16,26 @@ const SYSTEM_PROMPT = `أنت مساعد ذكي ومفيد.
 - كن موجزًا وواضحًا.
 - لا تكرر السؤال قبل الإجابة.`;
 
+type ChatMessage = {
+  role: "system" | "user" | "assistant";
+  content: string;
+};
+
 export async function generateReply(
   history: Pick<MessageDTO, "role" | "content">[]
 ): Promise<string> {
-  const messages = [
+  const messages: ChatMessage[] = [
     { role: "system", content: SYSTEM_PROMPT },
-    ...history.map((m) => ({
-      role: m.role,
-      content: m.content,
-    })),
-  ] as any;
+    ...history.map(
+      (m): ChatMessage => ({
+        role: m.role === "assistant" ? "assistant" : "user",
+        content: m.content,
+      })
+    ),
+  ];
 
   const res = await client.chat.completions.create({
-    model: model as string,
+    model,
     messages,
     temperature: 0.7,
   });

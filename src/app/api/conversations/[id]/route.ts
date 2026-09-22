@@ -20,11 +20,11 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
 
     await connectDB();
 
-    const doc = (await Conversation.findByIdAndUpdate(
+    const doc = await Conversation.findByIdAndUpdate(
       id,
       { title },
       { new: true }
-    ).lean()) as any;
+    );
 
     if (!doc) {
       return NextResponse.json(
