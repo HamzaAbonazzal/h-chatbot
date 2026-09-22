@@ -1,16 +1,6 @@
 import OpenAI from "openai";
 import type { MessageDTO } from "@/types";
 
-const apiKey = process.env.AI_API_KEY;
-const baseURL = process.env.AI_BASE_URL;
-const model = process.env.AI_MODEL;
-
-if (!apiKey || !baseURL || !model) {
-  throw new Error("AI env variables missing");
-}
-
-const client = new OpenAI({ apiKey, baseURL });
-
 const SYSTEM_PROMPT = `أنت مساعد ذكي ومفيد.
 - أجب دائمًا بنفس لغة المستخدم.
 - كن موجزًا وواضحًا.
@@ -21,9 +11,30 @@ type ChatMessage = {
   content: string;
 };
 
+let cachedClient: OpenAI | null = null;
+
+function getClient(): OpenAI {
+  const apiKey = process.env.AI_API_KEY;
+  const baseURL = process.env.AI_BASE_URL;
+
+  if (!apiKey || !baseURL) {
+    throw new Error("AI_API_KEY or AI_BASE_URL missing.");
+  }
+
+  if (!cachedClient) {
+    cachedClient = new OpenAI({ apiKey, baseURL });
+  }
+  return cachedClient;
+}
+
 export async function generateReply(
   history: Pick<MessageDTO, "role" | "content">[]
 ): Promise<string> {
+  const model = process.env.AI_MODEL;
+  if (!model) {
+    throw new Error("AI_MODEL missing.");
+  }
+
   const messages: ChatMessage[] = [
     { role: "system", content: SYSTEM_PROMPT },
     ...history.map(
@@ -32,7 +43,9 @@ export async function generateReply(
         content: m.content,
       })
     ),
-  ] as any;
+  ];
+
+  const client = getClient();
 
   const res = await client.chat.completions.create({
     model,
